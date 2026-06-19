@@ -79,7 +79,7 @@
 
   /* Period label column */
   .period-label-cell { display: flex; flex-direction: column; border-right: 1px solid var(--line); background: var(--bg); }
-  .period-label { flex: 1; display: flex; align-items: center; padding: 0 14px; font-size: 11px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.06em; }
+  .period-label { flex: 1; min-height: 44px; display: flex; align-items: center; padding: 0 14px; font-size: 11px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.06em; }
   .period-label:first-child { border-bottom: 1px solid var(--line); }
 
   /* Day cells — split into AM/PM halves */
@@ -95,6 +95,7 @@
 
   .half {
     flex: 1;
+    min-height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -352,12 +353,12 @@
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   const firebaseConfig = {
-    apiKey:            "AIzaSyD3scMrUuoubjVfPCUJwlxb2Q83P5z2TiI",
-    authDomain:        "ph-costco-availability.firebaseapp.com",
-    projectId:         "ph-costco-availability",
-    storageBucket:     "ph-costco-availability.firebasestorage.app",
+    apiKey: "AIzaSyD3scMrUuoubjVfPCUJwlxb2Q83P5z2TiI",
+    authDomain: "ph-costco-availability.firebaseapp.com",
+    projectId: "ph-costco-availability",
+    storageBucket: "ph-costco-availability.firebasestorage.app",
     messagingSenderId: "350753232783",
-    appId:             "1:350753232783:web:798e66756919e2ff7c9dfa"
+    appId: "1:350753232783:web:798e66756919e2ff7c9dfa"
   };
 
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxoPsX-ij8pSCg5o3RqCpSA9JlQyov1SByWztvrVFekHMdQhbmoWKLgu4tb7aO8Q-zE/exec";
@@ -544,7 +545,7 @@
     if (!email) {
       fieldError(emailInput, emailHint, 'Please enter your email address.'); valid=false;
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      fieldError(emailInput, emailHint, "That doesn't look like a valid email address.");
+      fieldError(emailInput, emailHint, "That doesn't look like a valid email address."); valid=false;
     }
     if (!password) {
       fieldError(passwordInput, passwordHint, 'Please enter your password.'); valid=false;
