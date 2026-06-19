@@ -79,7 +79,7 @@
 
   /* Period label column */
   .period-label-cell { display: flex; flex-direction: column; border-right: 1px solid var(--line); background: var(--bg); }
-  .period-label { flex: 1; min-height: 75px; display: flex; align-items: center; padding: 0 14px; font-size: 11px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.06em; }
+  .period-label { flex: 1; min-height: 44px; display: flex; align-items: center; padding: 0 14px; font-size: 11px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.06em; }
   .period-label:first-child { border-bottom: 1px solid var(--line); }
 
   /* Day cells — split into AM/PM halves */
@@ -95,7 +95,7 @@
 
   .half {
     flex: 1;
-    min-height: 75px;
+    min-height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -728,9 +728,19 @@
     if (!currentUser) return;
     const payload={ name:currentUser.displayName||currentUser.email, email:currentUser.email, weekStart:isoDate(currentWeekStart), am:amStates, pm:pmStates, amNotes, pmNotes };
     try {
-      await fetch(APPS_SCRIPT_URL,{ method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload) });
-      setStatus('Saved','saved');
-    } catch(err) { setStatus('Could not save — check your connection.','error'); }
+      // Apps Script POST requires no-cors mode from external origins.
+      // We can't read the response body in no-cors, so we verify the save
+      // succeeded by doing a follow-up GET and checking the returned data.
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      setStatus('Saved', 'saved');
+    } catch(err) {
+      setStatus('Could not save — check your connection.', 'error');
+    }
   }
 
   async function loadFromSheet() {
@@ -740,7 +750,9 @@
     setStatus('Loading week…','saving');
     try {
       const url=`${APPS_SCRIPT_URL}?email=${encodeURIComponent(currentUser.email)}&weekStart=${isoDate(currentWeekStart)}`;
-      const data=await (await fetch(url)).json();
+      const res = await fetch(url, { mode: 'cors' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
       if (data.found) {
         DAYS.forEach(day=>{
           if (data.am&&data.am[day])      amStates[day]=data.am[day];
@@ -751,7 +763,10 @@
         renderAll();
       }
       setStatus('','');
-    } catch(err) { setStatus('Could not load saved data.','error'); }
+    } catch(err) {
+      console.error('Load error:', err);
+      setStatus('Could not load saved data.','error');
+    }
   }
 
   async function fetchUserRole(email) {
