@@ -726,19 +726,30 @@
 
   async function saveToSheet() {
     if (!currentUser) return;
-    const payload={ name:currentUser.displayName||currentUser.email, email:currentUser.email, weekStart:isoDate(currentWeekStart), am:amStates, pm:pmStates, amNotes, pmNotes };
+    // Apps Script blocks cross-origin POST requests.
+    // We encode the payload as a GET parameter instead, which Apps Script
+    // handles correctly from any domain via doGet with action=save.
     try {
-      // Apps Script POST requires no-cors mode from external origins.
-      // We can't read the response body in no-cors, so we verify the save
-      // succeeded by doing a follow-up GET and checking the returned data.
-      await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
-      });
-      setStatus('Saved', 'saved');
+      const payload = {
+        action: 'save',
+        name: currentUser.displayName || currentUser.email,
+        email: currentUser.email,
+        weekStart: isoDate(currentWeekStart),
+        am: amStates,
+        pm: pmStates,
+        amNotes,
+        pmNotes
+      };
+      const url = APPS_SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload));
+      const res = await fetch(url);
+      const json = await res.json();
+      if (json.status === 'success') {
+        setStatus('Saved', 'saved');
+      } else {
+        setStatus('Could not save — check your connection.', 'error');
+      }
     } catch(err) {
+      console.error('Save error:', err);
       setStatus('Could not save — check your connection.', 'error');
     }
   }
