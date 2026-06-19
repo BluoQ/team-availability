@@ -39,14 +39,29 @@
   .auth-wrap h1 { font-size: 19px; margin: 0 0 4px; letter-spacing: -0.01em; }
   .auth-wrap p.sub { color: var(--ink-soft); font-size: 13px; margin: 0 0 24px; }
   label { display: block; font-size: 12px; font-weight: 600; color: var(--ink-soft); margin-bottom: 6px; margin-top: 16px; }
+  .field-wrap { position: relative; }
+  .field-wrap input { padding-right: 38px; }
+  .toggle-pw { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--ink-soft); font-size: 13px; padding: 0; line-height: 1; }
+  .toggle-pw:hover { color: var(--ink); }
   input[type="text"], input[type="email"], input[type="password"] { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 14px; background: var(--bg); color: var(--ink); }
+  input.field-error { border-color: var(--red); outline: none; }
+  input.field-error:focus { outline: 2px solid var(--red); outline-offset: 1px; }
   input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
-  .primary-btn { width: 100%; margin-top: 22px; background: var(--accent); color: white; border: none; padding: 11px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .field-hint { font-size: 11px; margin-top: 4px; display: none; }
+  .field-hint.error { color: var(--red); display: block; }
+  .field-hint.info  { color: var(--ink-soft); display: block; }
+  .primary-btn { width: 100%; margin-top: 22px; background: var(--accent); color: white; border: none; padding: 11px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 120ms; }
   .primary-btn:hover { background: #2D2A87; }
   .primary-btn:disabled { opacity: 0.5; cursor: default; }
   .switch-mode { text-align: center; margin-top: 18px; font-size: 13px; color: var(--ink-soft); }
   .switch-mode button { background: none; border: none; color: var(--accent); font-weight: 600; cursor: pointer; font-size: 13px; padding: 0; }
-  .error-msg { background: var(--red-bg); color: var(--red); border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-top: 16px; display: none; }
+  .error-msg { display: none; background: var(--red-bg); color: var(--red); border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-top: 16px; line-height: 1.5; }
+  .error-msg.info-msg { background: var(--accent-soft); color: var(--accent); }
+  .forgot-wrap { text-align: right; margin-top: 6px; }
+  .forgot-wrap button { background: none; border: none; color: var(--ink-soft); font-size: 11.5px; cursor: pointer; padding: 0; text-decoration: underline; }
+  .forgot-wrap button:hover { color: var(--accent); }
+  .pw-strength { height: 3px; border-radius: 2px; margin-top: 5px; background: var(--line); overflow: hidden; display: none; }
+  .pw-strength-bar { height: 100%; width: 0; border-radius: 2px; transition: width 200ms, background 200ms; }
 
   /* Week nav */
   .week-nav { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 28px; }
@@ -232,16 +247,36 @@
     <div class="auth-wrap">
       <h1 id="authTitle">Sign in</h1>
       <p class="sub" id="authSub">Enter your details to set your availability.</p>
+
       <div id="nameField">
         <label for="nameInput">Your name</label>
-        <input type="text" id="nameInput" placeholder="Jordan Smith" autocomplete="name" />
+        <div class="field-wrap">
+          <input type="text" id="nameInput" placeholder="Jordan Smith" autocomplete="name" />
+        </div>
+        <div class="field-hint" id="nameHint"></div>
       </div>
+
       <label for="emailInput">Email</label>
-      <input type="email" id="emailInput" placeholder="you@example.com" autocomplete="email" />
+      <div class="field-wrap">
+        <input type="email" id="emailInput" placeholder="you@example.com" autocomplete="email" />
+      </div>
+      <div class="field-hint" id="emailHint"></div>
+
       <label for="passwordInput">Password</label>
-      <input type="password" id="passwordInput" placeholder="At least 6 characters" autocomplete="current-password" />
-      <button class="primary-btn" id="authSubmitBtn">Sign in</button>
+      <div class="field-wrap">
+        <input type="password" id="passwordInput" placeholder="At least 6 characters" autocomplete="current-password" />
+        <button class="toggle-pw" id="togglePw" type="button" aria-label="Show password">👁</button>
+      </div>
+      <div class="pw-strength" id="pwStrength"><div class="pw-strength-bar" id="pwStrengthBar"></div></div>
+      <div class="field-hint" id="passwordHint"></div>
+      <div class="forgot-wrap" id="forgotWrap">
+        <button id="forgotBtn" type="button">Forgot password?</button>
+      </div>
+
       <div class="error-msg" id="authError"></div>
+
+      <button class="primary-btn" id="authSubmitBtn">Sign in</button>
+
       <div class="switch-mode">
         <span id="switchPrompt">Don't have an account?</span>
         <button id="switchModeBtn">Create one</button>
@@ -314,7 +349,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "__FIREBASE_API_KEY__",
@@ -345,6 +380,14 @@
   const nameInput        = document.getElementById('nameInput');
   const emailInput       = document.getElementById('emailInput');
   const passwordInput    = document.getElementById('passwordInput');
+  const togglePw         = document.getElementById('togglePw');
+  const pwStrength       = document.getElementById('pwStrength');
+  const pwStrengthBar    = document.getElementById('pwStrengthBar');
+  const nameHint         = document.getElementById('nameHint');
+  const emailHint        = document.getElementById('emailHint');
+  const passwordHint     = document.getElementById('passwordHint');
+  const forgotWrap       = document.getElementById('forgotWrap');
+  const forgotBtn        = document.getElementById('forgotBtn');
   const authSubmitBtn    = document.getElementById('authSubmitBtn');
   const authError        = document.getElementById('authError');
   const switchPrompt     = document.getElementById('switchPrompt');
@@ -383,39 +426,181 @@
   function setStatus(t,c) { statusBar.textContent=t; statusBar.className='status-bar'+(c?' '+c:''); }
 
   // Auth
-  function applyAuthMode() {
-    if (isSignUp) {
-      authTitle.textContent='Create your account'; authSub.textContent='Set up your availability profile.';
-      nameField.hidden=false; authSubmitBtn.textContent='Create account';
-      switchPrompt.textContent='Already have an account?'; switchModeBtn.textContent='Sign in';
-    } else {
-      authTitle.textContent='Sign in'; authSub.textContent='Enter your details to set your availability.';
-      nameField.hidden=true; authSubmitBtn.textContent='Sign in';
-      switchPrompt.textContent="Don't have an account?"; switchModeBtn.textContent='Create one';
-    }
+  function clearFieldErrors() {
+    [nameInput, emailInput, passwordInput].forEach(el => el.classList.remove('field-error'));
+    [nameHint, emailHint, passwordHint].forEach(el => { el.textContent=''; el.className='field-hint'; });
     authError.style.display='none';
+    authError.className='error-msg';
   }
-  switchModeBtn.addEventListener('click', ()=>{ isSignUp=!isSignUp; applyAuthMode(); });
-  function showAuthError(m) { authError.textContent=m; authError.style.display='block'; }
+
+  function fieldError(input, hintEl, msg) {
+    input.classList.add('field-error');
+    hintEl.textContent=msg;
+    hintEl.className='field-hint error';
+    input.focus();
+  }
+
+  function showAuthError(msg, isInfo=false) {
+    authError.textContent=msg;
+    authError.className='error-msg'+(isInfo?' info-msg':'');
+    authError.style.display='block';
+  }
+
+  // Password strength indicator (sign up only)
+  passwordInput.addEventListener('input', ()=>{
+    if (!isSignUp) return;
+    const pw=passwordInput.value;
+    pwStrength.style.display=pw.length?'block':'none';
+    let score=0;
+    if (pw.length>=6)  score++;
+    if (pw.length>=10) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    const pct=[0,25,50,75,90,100][score];
+    const colors=['','#DC3A3A','#C99A06','#C99A06','#1FA855','#1FA855'];
+    const labels=['','Weak','Fair','Fair','Strong','Very strong'];
+    pwStrengthBar.style.width=pct+'%';
+    pwStrengthBar.style.background=colors[score];
+    passwordHint.textContent=pw.length?labels[score]:'';
+    passwordHint.className='field-hint'+(score<=1&&pw.length?' error':score>=2&&pw.length?' info':'');
+  });
+
+  // Show/hide password toggle
+  togglePw.addEventListener('click', ()=>{
+    const isText=passwordInput.type==='text';
+    passwordInput.type=isText?'password':'text';
+    togglePw.textContent=isText?'👁':'🙈';
+    togglePw.setAttribute('aria-label', isText?'Show password':'Hide password');
+  });
+
+  // Clear field error styling on input
+  nameInput.addEventListener('input',    ()=>{ nameInput.classList.remove('field-error');     nameHint.className='field-hint'; });
+  emailInput.addEventListener('input',   ()=>{ emailInput.classList.remove('field-error');    emailHint.className='field-hint'; });
+  passwordInput.addEventListener('input',()=>{ passwordInput.classList.remove('field-error'); });
+
+  // Allow Enter key to submit
+  [nameInput, emailInput, passwordInput].forEach(el => {
+    el.addEventListener('keydown', e=>{ if(e.key==='Enter') authSubmitBtn.click(); });
+  });
+
+  function applyAuthMode() {
+    clearFieldErrors();
+    pwStrength.style.display='none';
+    pwStrengthBar.style.width='0';
+    if (isSignUp) {
+      authTitle.textContent='Create your account';
+      authSub.textContent='Set up your availability profile.';
+      nameField.hidden=false;
+      forgotWrap.hidden=true;
+      authSubmitBtn.textContent='Create account';
+      switchPrompt.textContent='Already have an account?';
+      switchModeBtn.textContent='Sign in';
+      passwordInput.placeholder='At least 6 characters';
+      passwordInput.autocomplete='new-password';
+    } else {
+      authTitle.textContent='Sign in';
+      authSub.textContent='Enter your details to set your availability.';
+      nameField.hidden=true;
+      forgotWrap.hidden=false;
+      authSubmitBtn.textContent='Sign in';
+      switchPrompt.textContent="Don't have an account?";
+      switchModeBtn.textContent='Create one';
+      passwordInput.placeholder='Your password';
+      passwordInput.autocomplete='current-password';
+    }
+  }
+
+  switchModeBtn.addEventListener('click', ()=>{
+    isSignUp=!isSignUp;
+    nameInput.value=''; emailInput.value=''; passwordInput.value='';
+    passwordInput.type='password'; togglePw.textContent='👁';
+    applyAuthMode();
+  });
+
+  // Forgot password
+  forgotBtn.addEventListener('click', async ()=>{
+    const email=emailInput.value.trim();
+    if (!email) { fieldError(emailInput, emailHint, 'Enter your email address first, then click Forgot password.'); return; }
+    if (!/\S+@\S+\.\S+/.test(email)) { fieldError(emailInput, emailHint, 'Enter a valid email address.'); return; }
+    forgotBtn.textContent='Sending…'; forgotBtn.disabled=true;
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showAuthError(`Password reset email sent to ${email}. Check your inbox (and spam folder).`, true);
+    } catch(err) {
+      const c=err&&err.code?err.code:'';
+      if (c.includes('user-not-found')) showAuthError('No account found with that email address.');
+      else if (c.includes('invalid-email')) fieldError(emailInput, emailHint, 'Enter a valid email address.');
+      else showAuthError('Could not send reset email. Please try again.');
+    } finally { forgotBtn.textContent='Forgot password?'; forgotBtn.disabled=false; }
+  });
+
+  function validateForm() {
+    clearFieldErrors();
+    const email=emailInput.value.trim(), password=passwordInput.value, name=nameInput.value.trim();
+    let valid=true;
+
+    if (isSignUp && !name) { fieldError(nameInput, nameHint, 'Please enter your name.'); valid=false; }
+    if (!email) {
+      fieldError(emailInput, emailHint, 'Please enter your email address.'); valid=false;
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      fieldError(emailInput, emailHint, 'That doesn't look like a valid email address.'); valid=false;
+    }
+    if (!password) {
+      fieldError(passwordInput, passwordHint, 'Please enter your password.'); valid=false;
+    } else if (isSignUp && password.length < 6) {
+      fieldError(passwordInput, passwordHint, 'Password must be at least 6 characters.'); valid=false;
+    }
+    return valid;
+  }
+
   function friendlyAuthError(err) {
     const c=err&&err.code?err.code:'';
-    if (c.includes('email-already-in-use')) return 'That email already has an account.';
-    if (c.includes('invalid-credential')||c.includes('wrong-password')||c.includes('user-not-found')) return 'Incorrect email or password.';
-    if (c.includes('weak-password')) return 'Password must be at least 6 characters.';
-    if (c.includes('invalid-email')) return 'Enter a valid email address.';
-    return 'Something went wrong. Please try again.';
+    // Sign-in errors
+    if (c.includes('invalid-credential') || c.includes('wrong-password'))
+      return { field:'password', msg:'Incorrect password. Try again or use Forgot password.' };
+    if (c.includes('user-not-found'))
+      return { field:'email', msg:'No account found with this email address.' };
+    if (c.includes('user-disabled'))
+      return { field:'email', msg:'This account has been disabled. Contact your manager.' };
+    if (c.includes('too-many-requests'))
+      return { field:null, msg:'Too many failed attempts. Your account is temporarily locked — try again in a few minutes or reset your password.' };
+    // Sign-up errors
+    if (c.includes('email-already-in-use'))
+      return { field:'email', msg:'An account with this email already exists. Try signing in instead.' };
+    if (c.includes('weak-password'))
+      return { field:'password', msg:'Password is too weak. Use at least 6 characters with a mix of letters and numbers.' };
+    if (c.includes('invalid-email'))
+      return { field:'email', msg:'That doesn't look like a valid email address.' };
+    // Network
+    if (c.includes('network-request-failed'))
+      return { field:null, msg:'Network error — check your connection and try again.' };
+    return { field:null, msg:'Something went wrong. Please try again.' };
   }
+
   authSubmitBtn.addEventListener('click', async ()=>{
+    if (!validateForm()) return;
     const email=emailInput.value.trim(), password=passwordInput.value, name=nameInput.value.trim();
-    authError.style.display='none';
-    if (!email||!password||(isSignUp&&!name)) { showAuthError('Please fill in all fields.'); return; }
-    authSubmitBtn.disabled=true; authSubmitBtn.textContent=isSignUp?'Creating account…':'Signing in…';
+    authSubmitBtn.disabled=true;
+    authSubmitBtn.textContent=isSignUp?'Creating account…':'Signing in…';
     try {
-      if (isSignUp) { const c=await createUserWithEmailAndPassword(auth,email,password); await updateProfile(c.user,{displayName:name}); }
-      else await signInWithEmailAndPassword(auth,email,password);
-    } catch(err) { showAuthError(friendlyAuthError(err)); }
-    finally { authSubmitBtn.disabled=false; applyAuthMode(); }
+      if (isSignUp) {
+        const cred=await createUserWithEmailAndPassword(auth,email,password);
+        await updateProfile(cred.user,{displayName:name});
+      } else {
+        await signInWithEmailAndPassword(auth,email,password);
+      }
+    } catch(err) {
+      const {field, msg}=friendlyAuthError(err);
+      if (field==='email')    fieldError(emailInput,    emailHint,    msg);
+      else if (field==='password') fieldError(passwordInput, passwordHint, msg);
+      else showAuthError(msg);
+    } finally {
+      authSubmitBtn.disabled=false;
+      authSubmitBtn.textContent=isSignUp?'Create account':'Sign in';
+    }
   });
+
   signOutBtn.addEventListener('click',()=>signOut(auth));
 
   // Grid
