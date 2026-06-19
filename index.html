@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Team Availability</title>
+<style>
+  :root {
+    --bg: #F7F8FA;
+    --ink: #1C1F26;
+    --ink-soft: #6B7280;
+    --line: #E2E5EA;
+    --card: #FFFFFF;
+    --accent: #3730A3;
+    --accent-soft: #EEF0FC;
+    --green: #1FA855;
+    --green-bg: #E5F6EC;
+    --yellow: #C99A06;
+    --yellow-bg: #FBF1D6;
+    --red: #DC3A3A;
+    --red-bg: #FBE6E6;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  .topbar {
+    background: var(--accent);
+    color: white;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .topbar .brand {
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: -0.01em;
+  }
+
+  .topbar .brand span {
+    opacity: 0.65;
+    font-weight: 500;
+    font-size: 13px;
+    display: block;
+    letter-spacing: 0.02em;
+  }
+
+  .topbar .user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+  }
+
+  .topbar button.linklike {
+    background: none;
+    border: none;
+    color: white;
+    opacity: 0.8;
+    cursor: pointer;
+    font-size: 13px;
+    text-decoration: underline;
+    padding: 0;
+  }
+
+  .topbar button.linklike:hover { opacity: 1; }
+
+  main {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* ---------- Auth screen ---------- */
+  .auth-wrap {
+    max-width: 360px;
+    margin: 60px auto;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 32px;
+  }
+
+  .auth-wrap h1 {
+    font-size: 19px;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+
+  .auth-wrap p.sub {
+    color: var(--ink-soft);
+    font-size: 13px;
+    margin: 0 0 24px;
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+    margin-top: 16px;
+  }
+
+  input[type="text"], input[type="email"], input[type="password"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--bg);
+    color: var(--ink);
+  }
+
+  input:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .primary-btn {
+    width: 100%;
+    margin-top: 22px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 11px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .primary-btn:hover { background: #2D2A87; }
+  .primary-btn:disabled { opacity: 0.5; cursor: default; }
+
+  .switch-mode {
+    text-align: center;
+    margin-top: 18px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  .switch-mode button {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 0;
+  }
+
+  .error-msg {
+    background: var(--red-bg);
+    color: var(--red);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    margin-top: 16px;
+    display: none;
+  }
+
+  /* ---------- Week nav ---------- */
+  .week-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .week-nav button {
+    background: var(--card);
+    border: 1px solid var(--line);
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--ink);
+  }
+
+  .week-nav button:hover { background: var(--accent-soft); border-color: var(--accent); }
+
+  .week-label {
+    font-size: 15px;
+    font-weight: 600;
+    min-width: 220px;
+    text-align: center;
+    letter-spacing: -0.01em;
+  }
+
+  .week-label .relative-tag {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 2px;
+  }
+
+  /* ---------- Grid card ---------- */
+  .grid-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .grid-row {
+    display: grid;
+    grid-template-columns: 140px repeat(7, 1fr);
+  }
+
+  .grid-row.header-row {
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .grid-row.header-row .cell {
+    padding: 14px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+
+  .grid-row.header-row .cell .date-num {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    text-transform: none;
+    letter-spacing: normal;
+    margin-top: 2px;
+  }
+
+  .name-cell {
+    padding: 14px 16px;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    border-right: 1px solid var(--line);
+    background: var(--bg);
+  }
+
+  .day-cell {
+    aspect-ratio: 1 / 1;
+    border-right: 1px solid var(--line);
+    border-bottom: none;
+    cursor: pointer;
+    position: relative;
+    background: #FFFFFF;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .day-cell:last-child { border-right: none; }
+
+  .day-cell.empty {
+    background: repeating-linear-gradient(
+      45deg,
+      #FAFBFC,
+      #FAFBFC 8px,
+      #F3F4F6 8px,
+      #F3F4F6 9px
+    );
+  }
+
+  .day-cell.green { background: var(--green-bg); }
+  .day-cell.yellow { background: var(--yellow-bg); }
+  .day-cell.red { background: var(--red-bg); }
+
+  .day-cell .dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    transition: transform 120ms ease;
+  }
+
+  .day-cell.green .dot { background: var(--green); }
+  .day-cell.yellow .dot { background: var(--yellow); }
+  .day-cell.red .dot { background: var(--red); }
+  .day-cell.empty .dot { display: none; }
+
+  .day-cell:hover .dot { transform: scale(1.15); }
+  .day-cell:active .dot { transform: scale(0.9); }
+
+  .day-cell:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+
+  /* ---------- Note icon + popover ---------- */
+  .note-icon {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.0);
+    border: 1.5px solid #C7CBD3;
+    color: #8A8F99;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 2;
+  }
+
+  .note-icon:hover {
+    background: white;
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .note-icon.has-note {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+
+  .day-cell.empty .note-icon { display: none; }
+
+  .note-popover {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 6px;
+    width: 200px;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(20,22,30,0.14);
+    padding: 10px;
+    z-index: 10;
+    text-align: left;
+  }
+
+  .note-popover textarea {
+    width: 100%;
+    min-height: 60px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 7px 8px;
+    font-size: 12.5px;
+    font-family: inherit;
+    resize: vertical;
+    color: var(--ink);
+    background: var(--bg);
+  }
+
+  .note-popover textarea:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .note-popover .note-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .note-popover button {
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+
+  .note-popover .note-save {
+    background: var(--accent);
+    color: white;
+  }
+
+  .note-popover .note-save:hover { background: #2D2A87; }
+
+  .note-popover .note-cancel {
+    background: var(--bg);
+    color: var(--ink-soft);
+  }
+
+  .note-popover .note-cancel:hover { background: var(--line); }
+
+  /* fill-in stamp animation */
+  @keyframes stampIn {
+    0% { transform: scale(0); }
+    60% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+  }
+  .day-cell .dot.animate { animation: stampIn 220ms ease-out; }
+
+  /* ---------- Legend + actions ---------- */
+  .legend {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    margin-top: 22px;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  .legend-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+  }
+
+  .legend-dot.green { background: var(--green); }
+  .legend-dot.yellow { background: var(--yellow); }
+  .legend-dot.red { background: var(--red); }
+  .legend-dot.empty { background: #D1D5DB; }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 24px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    min-height: 20px;
+  }
+
+  .status-bar.saved { color: var(--green); font-weight: 600; }
+  .status-bar.saving { color: var(--ink-soft); }
+  .status-bar.error { color: var(--red); font-weight: 600; }
+
+  .hint {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 13px;
+    margin-top: 8px;
+  }
+
+  .loading-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+
+  [hidden] { display: none !important; }
+
+  /* ---------- Toolbar (copy week / export / view toggle) ---------- */
+  .toolbar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+
+  .toolbar button {
+    background: var(--card);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 7px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .toolbar button:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  .toolbar button:disabled { opacity: 0.45; cursor: default; }
+  .toolbar button:disabled:hover { background: var(--card); border-color: var(--line); color: var(--ink); }
+
+  .view-toggle {
+    display: flex;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    overflow: hidden;
+  }
+
+  .view-toggle button {
+    border: none;
+    border-radius: 0;
+    background: var(--card);
+  }
+
+  .view-toggle button.active {
+    background: var(--accent);
+    color: white;
+  }
+
+  .view-toggle button.active:hover { background: var(--accent); color: white; }
+
+  /* ---------- Manager shared grid ---------- */
+  .manager-grid-wrap {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  table.manager-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  table.manager-table th, table.manager-table td {
+    padding: 10px 8px;
+    text-align: center;
+    border-bottom: 1px solid var(--line);
+  }
+
+  table.manager-table th {
+    background: var(--bg);
+    color: var(--ink-soft);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 700;
+  }
+
+  table.manager-table td.emp-name-cell {
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+    padding-left: 16px;
+  }
+
+  table.manager-table tr:last-child td { border-bottom: none; }
+
+  .status-dot {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    position: relative;
+  }
+
+  .status-dot.green { background: var(--green); }
+  .status-dot.yellow { background: var(--yellow); }
+  .status-dot.red { background: var(--red); }
+  .status-dot.empty { background: #E2E5EA; }
+
+  .status-dot[data-has-note="true"]::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 1px solid white;
+  }
+
+  .manager-empty-state {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 13px;
+    padding: 40px 20px;
+  }
+
+  /* ---------- Print view ---------- */
+  .print-only { display: none; }
+
+  @media print {
+    .topbar, .week-nav, .toolbar, .legend, .hint, .status-bar { display: none !important; }
+    body { background: white; }
+    main { padding: 0; max-width: 100%; }
+    .print-only { display: block; margin-bottom: 16px; }
+    .print-title { font-size: 18px; font-weight: 700; margin: 0 0 2px; }
+    .print-subtitle { font-size: 13px; color: #555; margin: 0; }
+    .grid-card, .manager-grid-wrap { border: 1px solid #ccc; }
+    .day-cell .note-icon { display: none !important; }
+  }
+
+
+  @media (max-width: 560px) {
+    .grid-row { grid-template-columns: 70px repeat(7, 1fr); }
+    .name-cell { padding: 10px 8px; font-size: 12px; }
+    .grid-row.header-row .cell { padding: 10px 4px; font-size: 10px; }
+    .grid-row.header-row .cell .date-num { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="brand">Team Availability<span>Weekly schedule</span></div>
+    <div class="user-info" id="userInfoBar" hidden>
+      <span id="userEmailLabel"></span>
+      <button class="linklike" id="signOutBtn">Sign out</button>
+    </div>
+  </div>
+
+  <main>
+    <div id="loadingScreen" class="loading-screen">Loading…</div>
+
+    <!-- AUTH -->
+    <div id="authScreen" hidden>
+      <div class="auth-wrap">
+        <h1 id="authTitle">Sign in</h1>
+        <p class="sub" id="authSub">Enter your details to set your availability.</p>
+
+        <div id="nameField">
+          <label for="nameInput">Your name</label>
+          <input type="text" id="nameInput" placeholder="Jordan Smith" autocomplete="name" />
+        </div>
+
+        <label for="emailInput">Email</label>
+        <input type="email" id="emailInput" placeholder="you@example.com" autocomplete="email" />
+
+        <label for="passwordInput">Password</label>
+        <input type="password" id="passwordInput" placeholder="At least 6 characters" autocomplete="current-password" />
+
+        <button class="primary-btn" id="authSubmitBtn">Sign in</button>
+
+        <div class="error-msg" id="authError"></div>
+
+        <div class="switch-mode">
+          <span id="switchPrompt">Don't have an account?</span>
+          <button id="switchModeBtn">Create one</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- APP -->
+    <div id="appScreen" hidden>
+      <div class="print-only" id="printHeader">
+        <p class="print-title" id="printTitle">Team Availability</p>
+        <p class="print-subtitle" id="printSubtitle"></p>
+      </div>
+
+      <div class="week-nav">
+        <button id="prevWeekBtn" aria-label="Previous week">←</button>
+        <div class="week-label">
+          <span id="weekRangeLabel">Jun 21 – Jun 27</span>
+          <span class="relative-tag" id="weekRelativeTag"></span>
+        </div>
+        <button id="nextWeekBtn" aria-label="Next week">→</button>
+      </div>
+
+      <div class="toolbar">
+        <div class="view-toggle" id="viewToggle" hidden>
+          <button id="myViewBtn" class="active">My week</button>
+          <button id="teamViewBtn">Team view</button>
+        </div>
+        <button id="copyLastWeekBtn">↻ Copy last week</button>
+        <button id="exportBtn">⎙ Export / Print</button>
+      </div>
+
+      <div id="myGridContainer">
+        <div class="grid-card">
+          <div class="grid-row header-row" id="headerRow"></div>
+          <div class="grid-row" id="dataRow">
+            <div class="name-cell" id="nameCellLabel">—</div>
+          </div>
+        </div>
+
+        <div class="legend">
+          <div class="legend-item"><span class="legend-dot empty"></span>Not set</div>
+          <div class="legend-item"><span class="legend-dot green"></span>Available</div>
+          <div class="legend-item"><span class="legend-dot yellow"></span>Prefer not, but available</div>
+          <div class="legend-item"><span class="legend-dot red"></span>Not available</div>
+        </div>
+
+        <p class="hint">Click a day to cycle through your availability. Use the note icon to add details. Changes save automatically.</p>
+      </div>
+
+      <div id="managerGridContainer" hidden>
+        <div class="manager-grid-wrap">
+          <table class="manager-table" id="managerTable">
+            <thead>
+              <tr id="managerTableHead"></tr>
+            </thead>
+            <tbody id="managerTableBody"></tbody>
+          </table>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><span class="legend-dot empty"></span>Not set</div>
+          <div class="legend-item"><span class="legend-dot green"></span>Available</div>
+          <div class="legend-item"><span class="legend-dot yellow"></span>Prefer not, but available</div>
+          <div class="legend-item"><span class="legend-dot red"></span>Not available</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--accent)"></span>Has a note (dot in corner)</div>
+        </div>
+      </div>
+
+      <div class="status-bar" id="statusBar"></div>
+    </div>
+  </main>
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      onAuthStateChanged,
+      signOut,
+      updateProfile
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    // ---- CONFIG ----
+    const firebaseConfig = {
+      apiKey: "AIzaSyD3scMrUuoubjVfPCUJwlxb2Q83P5z2TiI",
+      authDomain: "ph-costco-availability.firebaseapp.com",
+      projectId: "ph-costco-availability",
+      storageBucket: "ph-costco-availability.firebasestorage.app",
+      messagingSenderId: "350753232783",
+      appId: "1:350753232783:web:798e66756919e2ff7c9dfa"
+    };
+
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxoPsX-ij8pSCg5o3RqCpSA9JlQyov1SByWztvrVFekHMdQhbmoWKLgu4tb7aO8Q-zE/exec";
+
+    const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const STATES = ["empty", "green", "yellow", "red"];
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // ---- DOM refs ----
+    const loadingScreen = document.getElementById('loadingScreen');
+    const authScreen = document.getElementById('authScreen');
+    const appScreen = document.getElementById('appScreen');
+    const userInfoBar = document.getElementById('userInfoBar');
+    const userEmailLabel = document.getElementById('userEmailLabel');
+    const signOutBtn = document.getElementById('signOutBtn');
+
+    const authTitle = document.getElementById('authTitle');
+    const authSub = document.getElementById('authSub');
+    const nameField = document.getElementById('nameField');
+    const nameInput = document.getElementById('nameInput');
+    const emailInput = document.getElementById('emailInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const authSubmitBtn = document.getElementById('authSubmitBtn');
+    const authError = document.getElementById('authError');
+    const switchPrompt = document.getElementById('switchPrompt');
+    const switchModeBtn = document.getElementById('switchModeBtn');
+
+    const headerRow = document.getElementById('headerRow');
+    const dataRow = document.getElementById('dataRow');
+    const nameCellLabel = document.getElementById('nameCellLabel');
+    const weekRangeLabel = document.getElementById('weekRangeLabel');
+    const weekRelativeTag = document.getElementById('weekRelativeTag');
+    const prevWeekBtn = document.getElementById('prevWeekBtn');
+    const nextWeekBtn = document.getElementById('nextWeekBtn');
+    const statusBar = document.getElementById('statusBar');
+
+    const viewToggle = document.getElementById('viewToggle');
+    const myViewBtn = document.getElementById('myViewBtn');
+    const teamViewBtn = document.getElementById('teamViewBtn');
+    const copyLastWeekBtn = document.getElementById('copyLastWeekBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const myGridContainer = document.getElementById('myGridContainer');
+    const managerGridContainer = document.getElementById('managerGridContainer');
+    const managerTableHead = document.getElementById('managerTableHead');
+    const managerTableBody = document.getElementById('managerTableBody');
+    const printTitle = document.getElementById('printTitle');
+    const printSubtitle = document.getElementById('printSubtitle');
+
+    let isSignUp = false;
+    let currentUser = null;
+    let currentUserRole = 'employee';
+    let currentView = 'mine'; // 'mine' | 'team'
+    let currentWeekStart = getSunday(new Date());
+    let dayStates = {}; // { Sunday: "green", ... }
+    let dayNotes = {};  // { Sunday: "only after 2pm", ... }
+    let cellEls = {};
+    let saveTimer = null;
+    let openNoteDay = null;
+
+    // ---------- Helpers ----------
+    function getSunday(d) {
+      const date = new Date(d);
+      date.setHours(0,0,0,0);
+      const diff = date.getDay();
+      date.setDate(date.getDate() - diff);
+      return date;
+    }
+
+    function fmtDate(d) {
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    function isoDate(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function weekDates(sunday) {
+      return DAYS.map((_, i) => {
+        const d = new Date(sunday);
+        d.setDate(d.getDate() + i);
+        return d;
+      });
+    }
+
+    function setStatus(text, cls) {
+      statusBar.textContent = text;
+      statusBar.className = 'status-bar' + (cls ? ' ' + cls : '');
+    }
+
+    // ---------- Auth UI ----------
+    function applyAuthMode() {
+      if (isSignUp) {
+        authTitle.textContent = 'Create your account';
+        authSub.textContent = 'Set up your availability profile.';
+        nameField.hidden = false;
+        authSubmitBtn.textContent = 'Create account';
+        switchPrompt.textContent = 'Already have an account?';
+        switchModeBtn.textContent = 'Sign in';
+      } else {
+        authTitle.textContent = 'Sign in';
+        authSub.textContent = 'Enter your details to set your availability.';
+        nameField.hidden = true;
+        authSubmitBtn.textContent = 'Sign in';
+        switchPrompt.textContent = "Don't have an account?";
+        switchModeBtn.textContent = 'Create one';
+      }
+      authError.style.display = 'none';
+    }
+
+    switchModeBtn.addEventListener('click', () => {
+      isSignUp = !isSignUp;
+      applyAuthMode();
+    });
+
+    function showAuthError(msg) {
+      authError.textContent = msg;
+      authError.style.display = 'block';
+    }
+
+    function friendlyAuthError(err) {
+      const code = err && err.code ? err.code : '';
+      if (code.includes('email-already-in-use')) return 'That email already has an account. Try signing in instead.';
+      if (code.includes('invalid-credential') || code.includes('wrong-password') || code.includes('user-not-found')) return 'Incorrect email or password.';
+      if (code.includes('weak-password')) return 'Password must be at least 6 characters.';
+      if (code.includes('invalid-email')) return 'Enter a valid email address.';
+      return 'Something went wrong. Please try again.';
+    }
+
+    authSubmitBtn.addEventListener('click', async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      const name = nameInput.value.trim();
+
+      authError.style.display = 'none';
+
+      if (!email || !password || (isSignUp && !name)) {
+        showAuthError('Please fill in all fields.');
+        return;
+      }
+
+      authSubmitBtn.disabled = true;
+      authSubmitBtn.textContent = isSignUp ? 'Creating account…' : 'Signing in…';
+
+      try {
+        if (isSignUp) {
+          const cred = await createUserWithEmailAndPassword(auth, email, password);
+          await updateProfile(cred.user, { displayName: name });
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+        }
+      } catch (err) {
+        showAuthError(friendlyAuthError(err));
+      } finally {
+        authSubmitBtn.disabled = false;
+        applyAuthMode();
+      }
+    });
+
+    signOutBtn.addEventListener('click', () => signOut(auth));
+
+    // ---------- Grid rendering ----------
+    function buildGrid() {
+      headerRow.innerHTML = '<div class="cell"></div>';
+      const dates = weekDates(currentWeekStart);
+      DAYS.forEach((day, i) => {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        const short = day.slice(0,3);
+        cell.innerHTML = `${short}<span class="date-num">${dates[i].getDate()}</span>`;
+        headerRow.appendChild(cell);
+      });
+
+      // clear existing day cells (keep name cell)
+      [...dataRow.querySelectorAll('.day-cell')].forEach(el => el.remove());
+      cellEls = {};
+
+      DAYS.forEach(day => {
+        const cell = document.createElement('div');
+        cell.className = 'day-cell empty';
+        cell.setAttribute('role', 'button');
+        cell.setAttribute('tabindex', '0');
+        cell.setAttribute('aria-label', day);
+        const dot = document.createElement('div');
+        dot.className = 'dot';
+        cell.appendChild(dot);
+
+        const noteIcon = document.createElement('div');
+        noteIcon.className = 'note-icon';
+        noteIcon.textContent = '+';
+        noteIcon.setAttribute('role', 'button');
+        noteIcon.setAttribute('tabindex', '0');
+        noteIcon.setAttribute('aria-label', `Add note for ${day}`);
+        noteIcon.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleNotePopover(day);
+        });
+        noteIcon.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleNotePopover(day);
+          }
+        });
+        cell.appendChild(noteIcon);
+
+        cell.addEventListener('click', () => cycleDay(day));
+        cell.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            cycleDay(day);
+          }
+        });
+        dataRow.appendChild(cell);
+        cellEls[day] = cell;
+      });
+
+      updateWeekLabel();
+    }
+
+    function updateWeekLabel() {
+      const dates = weekDates(currentWeekStart);
+      weekRangeLabel.textContent = `${fmtDate(dates[0])} – ${fmtDate(dates[6])}`;
+
+      const thisWeek = getSunday(new Date()).getTime();
+      const diffWeeks = Math.round((currentWeekStart.getTime() - thisWeek) / (7*24*60*60*1000));
+      if (diffWeeks === 0) weekRelativeTag.textContent = 'This week';
+      else if (diffWeeks === 1) weekRelativeTag.textContent = 'Next week';
+      else if (diffWeeks === -1) weekRelativeTag.textContent = 'Last week';
+      else weekRelativeTag.textContent = '';
+    }
+
+    function renderDayState(day, animate) {
+      const cell = cellEls[day];
+      const state = dayStates[day] || 'empty';
+      const hasNote = !!(dayNotes[day] && dayNotes[day].trim());
+
+      // preserve popover element if open while resetting classes
+      cell.className = 'day-cell ' + state;
+
+      const dot = cell.querySelector('.dot');
+      if (animate && state !== 'empty') {
+        dot.classList.remove('animate');
+        requestAnimationFrame(() => dot.classList.add('animate'));
+      }
+
+      const noteIcon = cell.querySelector('.note-icon');
+      if (noteIcon) {
+        noteIcon.classList.toggle('has-note', hasNote);
+        noteIcon.textContent = hasNote ? '●' : '+';
+      }
+    }
+
+    function renderAllDays() {
+      DAYS.forEach(day => renderDayState(day, false));
+    }
+
+    function cycleDay(day) {
+      const current = dayStates[day] || 'empty';
+      const idx = STATES.indexOf(current);
+      const next = STATES[(idx + 1) % STATES.length];
+      dayStates[day] = next;
+      renderDayState(day, true);
+      queueSave();
+    }
+
+    function closeNotePopover() {
+      if (!openNoteDay) return;
+      const existing = cellEls[openNoteDay] && cellEls[openNoteDay].querySelector('.note-popover');
+      if (existing) existing.remove();
+      openNoteDay = null;
+    }
+
+    function toggleNotePopover(day) {
+      // don't allow notes on days with no status set yet
+      if ((dayStates[day] || 'empty') === 'empty') {
+        setStatus('Set a status for this day before adding a note.', 'error');
+        setTimeout(() => setStatus('', ''), 2200);
+        return;
+      }
+
+      if (openNoteDay === day) {
+        closeNotePopover();
+        return;
+      }
+      closeNotePopover();
+      openNoteDay = day;
+
+      const cell = cellEls[day];
+      const popover = document.createElement('div');
+      popover.className = 'note-popover';
+      popover.addEventListener('click', (e) => e.stopPropagation());
+
+      const textarea = document.createElement('textarea');
+      textarea.placeholder = 'e.g. only after 2pm';
+      textarea.value = dayNotes[day] || '';
+      popover.appendChild(textarea);
+
+      const actions = document.createElement('div');
+      actions.className = 'note-actions';
+
+      const cancelBtn = document.createElement('button');
+      cancelBtn.className = 'note-cancel';
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.addEventListener('click', () => closeNotePopover());
+
+      const saveBtn = document.createElement('button');
+      saveBtn.className = 'note-save';
+      saveBtn.textContent = 'Save note';
+      saveBtn.addEventListener('click', () => {
+        dayNotes[day] = textarea.value.trim();
+        renderDayState(day, false);
+        closeNotePopover();
+        queueSave();
+      });
+
+      actions.appendChild(cancelBtn);
+      actions.appendChild(saveBtn);
+      popover.appendChild(actions);
+
+      cell.appendChild(popover);
+      textarea.focus();
+    }
+
+    // close popover when clicking anywhere outside it
+    document.addEventListener('click', (e) => {
+      if (!openNoteDay) return;
+      const openCell = cellEls[openNoteDay];
+      if (openCell && !openCell.contains(e.target)) {
+        closeNotePopover();
+      }
+    });
+
+    function queueSave() {
+      setStatus('Saving…', 'saving');
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveToSheet, 600);
+    }
+
+    async function saveToSheet() {
+      if (!currentUser) return;
+      const payload = {
+        name: currentUser.displayName || currentUser.email,
+        email: currentUser.email,
+        weekStart: isoDate(currentWeekStart),
+        days: dayStates,
+        notes: dayNotes
+      };
+      try {
+        await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        setStatus('Saved', 'saved');
+      } catch (err) {
+        setStatus('Could not save — check your connection.', 'error');
+      }
+    }
+
+    async function loadFromSheet() {
+      if (!currentUser) return;
+      dayStates = {};
+      dayNotes = {};
+      closeNotePopover();
+      renderAllDays();
+      setStatus('Loading week…', 'saving');
+      try {
+        const url = `${APPS_SCRIPT_URL}?email=${encodeURIComponent(currentUser.email)}&weekStart=${isoDate(currentWeekStart)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.found) {
+          DAYS.forEach(day => {
+            const val = data.days[day];
+            if (val) dayStates[day] = val;
+            const note = data.notes && data.notes[day];
+            if (note) dayNotes[day] = note;
+          });
+          renderAllDays();
+        }
+        setStatus('', '');
+      } catch (err) {
+        setStatus('Could not load saved data.', 'error');
+      }
+    }
+
+    async function fetchUserRole(email) {
+      try {
+        const url = `${APPS_SCRIPT_URL}?action=role&email=${encodeURIComponent(email)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        return data.role === 'manager' ? 'manager' : 'employee';
+      } catch (err) {
+        return 'employee';
+      }
+    }
+
+    // ---------- View switching ----------
+    function showMyView() {
+      currentView = 'mine';
+      myViewBtn.classList.add('active');
+      teamViewBtn.classList.remove('active');
+      myGridContainer.hidden = false;
+      managerGridContainer.hidden = true;
+      copyLastWeekBtn.hidden = false;
+      updatePrintHeader();
+    }
+
+    function showTeamView() {
+      currentView = 'team';
+      teamViewBtn.classList.add('active');
+      myViewBtn.classList.remove('active');
+      myGridContainer.hidden = true;
+      managerGridContainer.hidden = false;
+      copyLastWeekBtn.hidden = true;
+      updatePrintHeader();
+      loadTeamWeek();
+    }
+
+    myViewBtn.addEventListener('click', () => { if (currentView !== 'mine') showMyView(); });
+    teamViewBtn.addEventListener('click', () => { if (currentView !== 'team') showTeamView(); });
+
+    function updatePrintHeader() {
+      const dates = weekDates(currentWeekStart);
+      const rangeStr = `${fmtDate(dates[0])} – ${fmtDate(dates[6])}, ${dates[6].getFullYear()}`;
+      if (currentView === 'team') {
+        printTitle.textContent = 'Team Availability — All Staff';
+      } else {
+        printTitle.textContent = `Availability — ${currentUser ? (currentUser.displayName || currentUser.email) : ''}`;
+      }
+      printSubtitle.textContent = `Week of ${rangeStr}`;
+    }
+
+    // ---------- Manager team view ----------
+    function buildManagerTableHead() {
+      managerTableHead.innerHTML = '<th style="text-align:left;">Name</th>';
+      const dates = weekDates(currentWeekStart);
+      DAYS.forEach((day, i) => {
+        const th = document.createElement('th');
+        th.innerHTML = `${day.slice(0,3)}<br>${dates[i].getDate()}`;
+        managerTableHead.appendChild(th);
+      });
+    }
+
+    async function loadTeamWeek() {
+      buildManagerTableHead();
+      managerTableBody.innerHTML = '<tr><td colspan="8" class="manager-empty-state">Loading team availability…</td></tr>';
+      try {
+        const url = `${APPS_SCRIPT_URL}?action=weekAll&email=${encodeURIComponent(currentUser.email)}&weekStart=${isoDate(currentWeekStart)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.error) {
+          managerTableBody.innerHTML = `<tr><td colspan="8" class="manager-empty-state">${data.error}</td></tr>`;
+          return;
+        }
+        if (!data.rows || data.rows.length === 0) {
+          managerTableBody.innerHTML = '<tr><td colspan="8" class="manager-empty-state">No one has submitted availability for this week yet.</td></tr>';
+          return;
+        }
+
+        managerTableBody.innerHTML = '';
+        data.rows
+          .sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email))
+          .forEach(person => {
+            const tr = document.createElement('tr');
+            const nameTd = document.createElement('td');
+            nameTd.className = 'emp-name-cell';
+            nameTd.textContent = person.name || person.email;
+            tr.appendChild(nameTd);
+
+            DAYS.forEach(day => {
+              const td = document.createElement('td');
+              const state = person.days[day] || 'empty';
+              const hasNote = !!(person.notes && person.notes[day] && person.notes[day].trim());
+              const dot = document.createElement('span');
+              dot.className = 'status-dot ' + state;
+              if (hasNote) {
+                dot.setAttribute('data-has-note', 'true');
+                dot.title = person.notes[day];
+              }
+              td.appendChild(dot);
+              tr.appendChild(td);
+            });
+
+            managerTableBody.appendChild(tr);
+          });
+      } catch (err) {
+        managerTableBody.innerHTML = '<tr><td colspan="8" class="manager-empty-state">Could not load team data.</td></tr>';
+      }
+    }
+
+    // ---------- Copy last week ----------
+    function weekHasAnyData() {
+      return DAYS.some(day => dayStates[day] && dayStates[day] !== 'empty');
+    }
+
+    copyLastWeekBtn.addEventListener('click', async () => {
+      if (weekHasAnyData()) {
+        const proceed = confirm('This week already has some availability set. Copying last week will overwrite it. Continue?');
+        if (!proceed) return;
+      }
+
+      const priorWeekStart = new Date(currentWeekStart);
+      priorWeekStart.setDate(priorWeekStart.getDate() - 7);
+
+      setStatus('Copying last week…', 'saving');
+      try {
+        const url = `${APPS_SCRIPT_URL}?email=${encodeURIComponent(currentUser.email)}&weekStart=${isoDate(priorWeekStart)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!data.found) {
+          setStatus('No data found for last week.', 'error');
+          setTimeout(() => setStatus('', ''), 2200);
+          return;
+        }
+
+        dayStates = {};
+        dayNotes = {};
+        DAYS.forEach(day => {
+          if (data.days[day]) dayStates[day] = data.days[day];
+          if (data.notes && data.notes[day]) dayNotes[day] = data.notes[day];
+        });
+        renderAllDays();
+        queueSave();
+      } catch (err) {
+        setStatus('Could not copy last week.', 'error');
+      }
+    });
+
+    // ---------- Export / Print ----------
+    exportBtn.addEventListener('click', () => {
+      updatePrintHeader();
+      window.print();
+    });
+
+    prevWeekBtn.addEventListener('click', () => {
+      currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+      currentWeekStart = new Date(currentWeekStart);
+      updateWeekLabel();
+      updatePrintHeader();
+      if (currentView === 'team') {
+        loadTeamWeek();
+      } else {
+        loadFromSheet();
+      }
+    });
+
+    nextWeekBtn.addEventListener('click', () => {
+      currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+      currentWeekStart = new Date(currentWeekStart);
+      updateWeekLabel();
+      updatePrintHeader();
+      if (currentView === 'team') {
+        loadTeamWeek();
+      } else {
+        loadFromSheet();
+      }
+    });
+
+    // ---------- Auth state ----------
+    onAuthStateChanged(auth, async (user) => {
+      loadingScreen.hidden = true;
+      if (user) {
+        currentUser = user;
+        authScreen.hidden = true;
+        appScreen.hidden = false;
+        userInfoBar.hidden = false;
+        userEmailLabel.textContent = user.displayName ? `${user.displayName} · ${user.email}` : user.email;
+        nameCellLabel.textContent = user.displayName || user.email;
+
+        currentWeekStart = getSunday(new Date());
+        currentView = 'mine';
+        buildGrid();
+        showMyView();
+
+        currentUserRole = await fetchUserRole(user.email);
+        viewToggle.hidden = (currentUserRole !== 'manager');
+
+        loadFromSheet();
+      } else {
+        currentUser = null;
+        currentUserRole = 'employee';
+        appScreen.hidden = true;
+        userInfoBar.hidden = true;
+        authScreen.hidden = false;
+        applyAuthMode();
+      }
+    });
+  </script>
+</body>
+</html>
