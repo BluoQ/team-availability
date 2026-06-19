@@ -183,15 +183,61 @@
   table.manager-table th:first-child { text-align: left; padding-left: 16px; }
   table.manager-table tr:last-child td { border-bottom: none; }
 
-  .emp-name-wrap { display: flex; flex-direction: column; gap: 1px; padding: 8px 8px 8px 16px; text-align: left; }
+  /* Manager table name cell */
+  .emp-name-cell-td { padding: 0 !important; vertical-align: middle; }
+  .emp-name-wrap {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    padding: 0;
+    text-align: left;
+    height: 100%;
+  }
+  .emp-name-info {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    padding: 10px 12px 10px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-right: 1px solid var(--line);
+  }
   .emp-name { font-weight: 600; font-size: 13px; }
   .emp-email { font-size: 11px; color: var(--ink-soft); }
 
+  /* AM/PM period labels beside name */
+  .emp-period-labels {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .emp-period-label-row {
+    flex: 1;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+    border-right: 1px solid var(--line);
+  }
+  .emp-period-label-row:first-child { border-bottom: 1px dashed var(--line); }
+
   /* AM/PM split cell in manager table */
-  .mgr-day-cell { padding: 0; vertical-align: top; }
+  .mgr-day-cell { padding: 0 !important; vertical-align: top; }
   .mgr-half-wrap { display: flex; flex-direction: column; height: 100%; }
   .mgr-half {
-    flex: 1; min-height: 22px; display: flex; align-items: center; justify-content: center;
+    flex: 1;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: relative;
   }
   .mgr-half:first-child { border-bottom: 1px dashed var(--line); }
@@ -207,9 +253,6 @@
   .mgr-half.empty  .mgr-dot { display: none; }
 
   .mgr-half[data-has-note="true"]::after { content: ''; position: absolute; top: 2px; right: 2px; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
-
-  /* Period labels in manager table name column */
-  .mgr-period-label { font-size: 9px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); letter-spacing: 0.05em; margin-top: 1px; }
 
   .manager-empty-state { text-align: center; color: var(--ink-soft); font-size: 13px; padding: 40px 20px; }
 
@@ -361,7 +404,7 @@
     appId: "1:350753232783:web:798e66756919e2ff7c9dfa"
   };
 
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzsQnYcCYoQquje5XmcJ1syTTY6YMF0zmqiDuCEIEzLlQK0EHhwcQ7ID8fhb7aj67bY/exec";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxoPsX-ij8pSCg5o3RqCpSA9JlQyov1SByWztvrVFekHMdQhbmoWKLgu4tb7aO8Q-zE/exec";
   const DAYS   = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
   const STATES = ["empty","green","yellow","red"];
 
@@ -827,14 +870,17 @@
       rows.forEach(person=>{
         const tr=document.createElement('tr');
 
-        // Name cell with AM/PM labels
+        // Name cell with AM/PM labels aligned to row halves
         const nameTd=document.createElement('td');
+        nameTd.className='emp-name-cell-td';
         nameTd.innerHTML=`<div class="emp-name-wrap">
-          <span class="emp-name">${person.name||person.email}</span>
-          <span class="emp-email">${person.email||''}</span>
-          <div style="display:flex;flex-direction:column;margin-top:4px;gap:2px;">
-            <span class="mgr-period-label">AM</span>
-            <span class="mgr-period-label">PM</span>
+          <div class="emp-name-info">
+            <span class="emp-name">${person.name||person.email}</span>
+            <span class="emp-email">${person.email||''}</span>
+          </div>
+          <div class="emp-period-labels">
+            <div class="emp-period-label-row">AM</div>
+            <div class="emp-period-label-row">PM</div>
           </div>
         </div>`;
         tr.appendChild(nameTd);
