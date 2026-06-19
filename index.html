@@ -544,7 +544,7 @@
     if (!email) {
       fieldError(emailInput, emailHint, 'Please enter your email address.'); valid=false;
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      fieldError(emailInput, emailHint, 'That doesn't look like a valid email address.'); valid=false;
+      fieldError(emailInput, emailHint, "That doesn't look like a valid email address.");
     }
     if (!password) {
       fieldError(passwordInput, passwordHint, 'Please enter your password.'); valid=false;
@@ -571,7 +571,7 @@
     if (c.includes('weak-password'))
       return { field:'password', msg:'Password is too weak. Use at least 6 characters with a mix of letters and numbers.' };
     if (c.includes('invalid-email'))
-      return { field:'email', msg:'That doesn't look like a valid email address.' };
+      return { field:'email', msg:"That doesn't look like a valid email address." };
     // Network
     if (c.includes('network-request-failed'))
       return { field:null, msg:'Network error — check your connection and try again.' };
