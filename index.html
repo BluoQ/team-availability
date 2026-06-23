@@ -932,8 +932,28 @@
 
   exportBtn.addEventListener('click',()=>{ updatePrintHeader(); window.print(); });
 
-  prevWeekBtn.addEventListener('click',()=>{ currentWeekStart.setDate(currentWeekStart.getDate()-7); currentWeekStart=new Date(currentWeekStart); updateWeekLabel(); updatePrintHeader(); currentView==='team'?loadTeamWeek():loadFromSheet(); });
-  nextWeekBtn.addEventListener('click',()=>{ currentWeekStart.setDate(currentWeekStart.getDate()+7); currentWeekStart=new Date(currentWeekStart); updateWeekLabel(); updatePrintHeader(); currentView==='team'?loadTeamWeek():loadFromSheet(); });
+  function navigateWeek(dir) {
+    currentWeekStart.setDate(currentWeekStart.getDate() + (dir * 7));
+    currentWeekStart = new Date(currentWeekStart);
+    updateWeekLabel();
+    updatePrintHeader();
+    if (currentView === 'team') {
+      loadTeamWeek();
+    } else {
+      // Rebuild just the header date numbers without reconstructing the whole grid
+      const dates = weekDates(currentWeekStart);
+      const cells = headerRow.querySelectorAll('.cell');
+      DAYS.forEach((day, i) => {
+        if (cells[i + 1]) {
+          cells[i + 1].innerHTML = `${day.slice(0,3)}<span class="date-num">${dates[i].getDate()}</span>`;
+        }
+      });
+      loadFromSheet();
+    }
+  }
+
+  prevWeekBtn.addEventListener('click', () => navigateWeek(-1));
+  nextWeekBtn.addEventListener('click', () => navigateWeek(1));
 
   onAuthStateChanged(auth, async (user)=>{
     loadingScreen.hidden=true;
