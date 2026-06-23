@@ -404,7 +404,7 @@
     appId: "1:350753232783:web:798e66756919e2ff7c9dfa"
   };
 
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzsQnYcCYoQquje5XmcJ1syTTY6YMF0zmqiDuCEIEzLlQK0EHhwcQ7ID8fhb7aj67bY/exec";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxoPsX-ij8pSCg5o3RqCpSA9JlQyov1SByWztvrVFekHMdQhbmoWKLgu4tb7aO8Q-zE/exec";
   const DAYS   = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
   const STATES = ["empty","green","yellow","red"];
 
@@ -932,8 +932,32 @@
 
   exportBtn.addEventListener('click',()=>{ updatePrintHeader(); window.print(); });
 
-  prevWeekBtn.addEventListener('click',()=>{ currentWeekStart.setDate(currentWeekStart.getDate()-7); currentWeekStart=new Date(currentWeekStart); updateWeekLabel(); updatePrintHeader(); currentView==='team'?loadTeamWeek():loadFromSheet(); });
-  nextWeekBtn.addEventListener('click',()=>{ currentWeekStart.setDate(currentWeekStart.getDate()+7); currentWeekStart=new Date(currentWeekStart); updateWeekLabel(); updatePrintHeader(); currentView==='team'?loadTeamWeek():loadFromSheet(); });
+  function navigateWeek(dir) {
+    currentWeekStart.setDate(currentWeekStart.getDate() + (dir * 7));
+    currentWeekStart = new Date(currentWeekStart);
+    updateWeekLabel();
+    updatePrintHeader();
+    if (currentView === 'team') {
+      loadTeamWeek();
+    } else {
+      rebuildGridHeader(); // update the date numbers in the grid header
+      loadFromSheet();
+    }
+  }
+
+  function rebuildGridHeader() {
+    const dates = weekDates(currentWeekStart);
+    const cells = headerRow.querySelectorAll('.cell');
+    // cells[0] is the empty label cell, skip it
+    DAYS.forEach((day, i) => {
+      if (cells[i + 1]) {
+        cells[i + 1].innerHTML = `${day.slice(0,3)}<span class="date-num">${dates[i].getDate()}</span>`;
+      }
+    });
+  }
+
+  prevWeekBtn.addEventListener('click', () => navigateWeek(-1));
+  nextWeekBtn.addEventListener('click', () => navigateWeek(1));
 
   onAuthStateChanged(auth, async (user)=>{
     loadingScreen.hidden=true;
